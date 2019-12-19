@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		 <!-- AngularJS -->
+		 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+		 <!-- JQuery -->
+		 <script  src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+		 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+		 <script src="mascara.min.js"></script>
+		 <!-- Controller -->
+		 <script type="text/javascript" src="../javascript/controller/purchase-controller.js"></script>
+		 <!-- Service -->
+		 <script type="text/javascript" src="../javascript/service/purchase-service.js"></script>
+		 <!-- FontAwesome -->
+		 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+		 <!-- Bootstrap -->
+		 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		 <!-- CSS -->
+		 <script>
+				var wideScreen = 640; // for example beyond 640 is considered wide
+				// RESPONSIVE MENU
+				var toggleBtnGroup = function() {
+					var windowWidth = $(window).width();
+				  
+				  if(windowWidth < wideScreen) {
+					  $('#btn-group-toggle').addClass('btn-group-vertical').removeClass('btn-group');
+				
+				  } else {
+					   $('#btn-group-toggle').addClass('btn-group').removeClass('btn-group-vertical');
+				  }
+				}
+				
+				toggleBtnGroup(); // trigger on load
+				
+				window.addEventListener('resize',toggleBtnGroup); 
+
+			   </script>
+		<style>
+			.btn-primary {
+				background-color: #033ea4;
+ 				border-color: #033ea4; 
+			}
+			.btn-primary:focus {
+				background-color: #0062cc;
+ 				border-color: #0062cc; 
+			}
+		</style>
+		<meta charset="UTF-8">
+		<title>Boticario Programming Exercise</title>
+	</head>
+	<body ng-app="boticarioApplication" ng-controller="purchaseController">
+		<div class="container">
+				<div class="row">
+					<div class="col-md-2">
+						<div id="btn-group-toggle" class="btn-group" align="center">
+								<button class="btn btn-primary" ng-click="goTo(0)"><i class="fa fa-plus-circle"></i> New Purchase</button>
+								<button class="btn btn-primary" ng-click="goTo(3); listPurchases()"><i class="fa fa-list"></i> List Purchases</button>
+								<button class="btn btn-primary" ng-click="goTo(4)"><i class="fa fa-search"></i> Find Purchase</button>
+								<button class="btn btn-primary" ng-click="goToResellers()"><i class="fa fa-arrow-left"></i> Menu Resellers</button>
+								<button class="btn btn-primary" ng-click="goTo(5)"><i class="fa fa-envelope-square"></i> About</button>
+						</div>
+					</div>
+				</div>
+			<div class="alert alert-success alert-dismissible fade show" role="alert" ng-show="success" style="width: 88.7%;">
+				{{alertMessage}}
+			</div>
+			<div class="alert alert-danger alert-dismissible fade show" role="alert" ng-show="error" style="width: 88.7%;">
+				{{alertMessage}}
+			</div>
+			<div style="margin-top: 50px">
+				<form name="formInsertPurchase" ng-show="option == 0">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="codeInsert">Code</label>
+									<input type="text" id="codeInsert" class="form-control" ng-model="purchase.code" min="0" max="2147483647" required>
+								</div>
+								
+							
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="cpfInsert">CPF</label>
+									<input id="cpf" placeholder="###.###.###-##" onkeyup="mascara('###.###.###-##',this,event,true)" maxlength="14" class="form-control" type="text" ng-model="purchase.cpf" required>
+								</div>
+								
+							</div>
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="dateInsert">Date (YYYY-MM-DD)</label>
+									<input id="dateInsert" class="form-control" type="text" ng-model="purchase.date"  required>
+								</div>
+							
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="valueInsert">Value</label>
+									<input id="valueInsert" class="form-control" type="number" step=0.01 ng-model="purchase.valie"  required>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="valueInsert">Cashback Acumulated R$ </label>
+									<label for="valueInsert">{{purchase.acumulated}}</label>
+								</div>
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="valueInsert">Cashback Discount R$ </label>
+									<label for="valueInsert">{{purchase.dicountCashback}}</label>
+									
+								</div>
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="valueInsert">Range % </label>
+									<label for="valueInsert" >{{purchase.percentAplied}}</label>
+								</div>
+								<div class="form-group col-12">
+									<button class="btn btn-primary btn-sm"  ng-click="getCashBackAcumulated()"><i class="fa fa-money"></i> Get Cashback Acumulated</button>
+								</div>
+							</div>
+							
+							<!--PARA SALVAR UM STATUS SELECIONADO BASTA DESCOMENTAR ESTE CÓDIGO e descomentar no controller $scope.insertPurchase-->
+							<!--<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="colorInsert">Status</label>
+									<select id="colorInsert" class="form-control" ng-options="status.name for status in statuses" ng-model="purchase.status" required>
+										<option value="">Select</option>
+									</select>
+								</div>
+							</div>-->
+							<div class="row" style="margin-top: 25px">
+								<div class="form-group col-12">
+									<button class="btn btn-primary" ng-click="insertPurchase()"><i class="fa fa-check-circle"></i> Insert Purchase</button>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<img src="images/boticario.jpg" class="img-fluid" style="max-width:80%" alt="Logo">
+						</div>
+					</div>
+				</form>
+				<form name="formEditFound" ng-show="option == 1 && found">
+					<div class="row">
+						<div class="col-6">
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="codeEdit">Code</label>
+									<input type="text" id="codeEdit" class="form-control" ng-model="purchase.code" min="0" max="2147483647" required>
+								</div>
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="cpfEdit">CPF</label>
+									<input id="cpfEdit" placeholder="###.###.###-##" onkeyup="mascara('###.###.###-##',this,event,true)" maxlength="14" class="form-control" type="text" ng-model="purchase.cpf" required>
+									
+								</div>
+								
+							</div>
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="dateEdit">Date (YYYY-MM-DD)</label>
+									<input id="dateEdit" class="form-control" type="text" ng-model="purchase.date"  required>
+								</div>
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="valueEdit">Value</label>
+									<input id="valueEdit" class="form-control" type="number" step=0.01 ng-model="purchase.valie"  required>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="colorEdit">Status1</label>
+									<select id="colorEdit" class="form-control" ng-options="status.name for status in dados.statuses track by status.id" ng-model="purchase.status" required>
+											<option value="">Select</option>
+									</select>
+								</div>
+							</div>
+							<div class="row" style="margin-top: 25px">
+								<div class="form-group col-12">
+									<button class="btn btn-primary" ng-disabled="purchase.statusId != 1" ng-click="editPurchase(formEditFound.$valid)"><i class="fa fa-check-circle"></i> Update Purchase</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+				<form name="formEditNotFound" ng-show="option == 1 && !found">
+					<div class="row">
+						<div class="col-6">
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="codeEdit1">Code</label>
+									<input type="text" id="codeEdit1" class="form-control" ng-model="purchase.code" min="0" max="2147483647" required>
+								</div>
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="cpfEdit1">CPF</label>
+									<input id="cpfEdit1" class="form-control" type="text" ng-model="purchase.cpf" required>
+								</div>
+								
+							</div>
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="dateEdit1">Date (YYYY-MM-DD)</label>
+									<input id="dateEdit1" class="form-control" type="text" ng-model="purchase.date"  required>
+								</div>
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="valueEdi1t">Value</label>
+									<input id="valueEdit1" class="form-control" type="number" step=0.01 ng-model="purchase.valie"  required>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-8 col-sm-12">
+									<label for="colorEdit1">Status</label>
+									<select id="colorEdit1" class="form-control" ng-options="status.name for status in dados.statuses track by status.id" ng-model="purchase.status" required>
+											<option value="">Select</option>
+									</select>
+								</div>
+							</div>
+							<div class="row" style="margin-top: 25px">
+								<div class="form-group col-12">
+									<button class="btn btn-primary" ng-click="editPurchase(formEditFound.$valid)"><i class="fa fa-check-circle"></i> Update Purchase</button>
+								</div>
+							</div>
+						</div>
+						<div class="col-6">
+							<img src="images/boticario.jpg" class="img-fluid" style="max-width:80%" alt="Logo">
+						</div>
+					</div>
+				</form>
+				<form name="formDelete" ng-show="option == 2">
+					<div class="row">
+						<div class="col-6" ng-show="found">
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="codeDelete1">Code</label>
+									<input type="text" id="codeDelete1" class="form-control" ng-model="purchase.code" min="0" max="2147483647" required>
+								</div>
+								<div class="form-group col-6">
+									<label for="cpfDelete1">CPF</label>
+									<input id="cpfDelete1" class="form-control" type="text" ng-model="purchase.cpf" required>
+								</div>
+								
+							</div>
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="dateDelete1">Date (YYYY-MM-DD)</label>
+									<input id="dateDelete1" class="form-control" type="text" ng-model="purchase.date"  required>
+								</div>
+								<div class="form-group col-6">
+									<label for="valueDelete1">Value</label>
+									<input id="valueDelete1" class="form-control" type="number" step=0.01 ng-model="purchase.valie"  required>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="colorDelete1">Status</label>
+									<select id="colorDelete1" class="form-control" ng-options="status.name for status in dados.statuses track by status.id" ng-model="purchase.status" required>
+											<option value="">Select</option>
+									</select>
+								</div>
+							</div>
+							<div class="row" style="margin-top: 25px">
+								<div class="form-group col-12">
+									<button class="btn btn-primary" ng-disabled="purchase.statusId != 1" data-toggle="modal" data-target="#deleteModal"><i class="fa fa-check-circle"></i> Delete Purchase</button>
+								</div>
+							</div>
+						</div>
+						<div class="col-6" ng-hide="found">
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="codeDelete12">Code</label>
+									<input type="text" id="codeDelete12" class="form-control" ng-model="purchase.code" min="0" max="2147483647" required>
+								</div>
+								<div class="form-group col-6">
+									<label for="cpfDelete21">CPF</label>
+									<input id="cpfDelete12" class="form-control" type="text" ng-model="purchase.cpf" required>
+								</div>
+								
+							</div>
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="dateDelete21">Date (YYYY-MM-DD)</label>
+									<input id="dateDelete21" class="form-control" type="text" ng-model="purchase.date"  required>
+								</div>
+								<div class="form-group col-6">
+									<label for="valueDelete21">Value</label>
+									<input id="valueDelete21" class="form-control" type="number" step=0.01 ng-model="purchase.valie"  required>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="valiEdit">Status</label>
+									<select id="valiEdit" class="form-control" ng-options="status.name for status in dados.statuses track by status.id" ng-model="purchase.status" required>
+											<option value="">Select</option>
+									</select>
+								</div>
+							</div>
+							<div class="row" style="margin-top: 25px">
+								<div class="form-group col-12">
+									<button class="btn btn-primary" data-toggle="modal" data-target="#deleteModal"><i class="fa fa-check-circle"></i> Delete Purchase</button>
+								</div>
+							</div>
+						</div>
+						<div class="col-6">
+							<img src="images/boticario.jpg" class="img-fluid" style="max-width:80%" alt="Logo">
+						</div>
+					</div>
+				</form>
+				<div ng-show="option == 3">
+					<table class="table table-hover" style="width: 88.7%">
+						<thead>
+							<tr>
+								<th>Code</th>
+								<th>CPF</th>
+								<th>Date</th>
+								<th>Value</th>
+								<th>Status</th>
+								<th>Acumulated Before</th>
+								<th>Percentage</th>
+								<th>Discount</th>
+								<th>Delete</th>
+								<th>Edit</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="purchase in listOftPurchase">
+								<td> {{purchase.code}} </td>
+								<td> {{purchase.cpf}} </td>
+								<td> {{purchase.date}} </td>
+								<td> {{purchase.valie}} </td>
+								<td> {{purchase.statusName}} </td>
+								<td> {{purchase.acumulated}} </td>
+								<td> {{purchase.percentAplied}} </td>
+								<td> {{purchase.dicountCashback}} </td>
+								<td ng-click="callEditDeletePurchases(2,purchase.id)"><i class="fa fa-trash"></i></td>
+								<td ng-click="callEditDeletePurchases(1,purchase.id)"><i class="fa fa-edit"></i></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<form name="formFindById" ng-show="option == 4" novalidate>
+					<div class="row">
+						<div class="col-6" ng-show="found">
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="codeFind1">Code</label>
+									<input type="text" id="codeFind1" class="form-control" ng-model="purchase.code" min="0" max="2147483647" required>
+								</div>
+								<div class="form-group col-6">
+									<label for="cpfFind1">CPF</label>
+									<input id="cpfFind1" class="form-control" type="text" ng-model="purchase.cpf" required>
+								</div>
+								
+							</div>
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="dateFind1">Date (YYYY-MM-DD)</label>
+									<input id="dateFind1" class="form-control" type="text" ng-model="purchase.date"  required>
+								</div>
+								<div class="form-group col-6">
+									<label for="valueFind1">Value</label>
+									<input id="valueFind1" class="form-control" type="number" step=0.01 ng-model="purchase.valie"  required>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group col-6">
+									<label for="colorFind1">Status</label>
+									<select id="colorFind1" class="form-control" ng-options="status.name for status in statuses" ng-model="purchase.statusName" required>
+										<option value="">Select</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="col-6" ng-hide="found">
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-6 col-sm-12">
+									<label for="codeFind1">Code</label>
+									<input type="text" id="codeFind1" class="form-control" ng-model="purchase.code" min="0" max="2147483647" >
+								</div>
+								<div class="form-group col-md-6 col-lg-6 col-sm-12">
+									<label for="cpfFind1">CPF</label>
+									<input id="cpfFind1" class="form-control" type="text" ng-model="purchase.cpf" >
+								</div>
+								
+							</div>
+							<div class="row">
+								<div class="form-group col-md-6 col-lg-6 col-sm-12">
+									<label for="dateFind1">Date (YYYY-MM-DD)</label>
+									<input id="dateFind1" class="form-control" type="text" ng-model="purchase.date"  >
+								</div>
+								<div class="form-group col-md-6 col-lg-6 col-sm-12">
+									<label for="valueFind1">Value</label>
+									<input id="valueFind1" class="form-control" type="number" step=0.01 ng-model="purchase.valie"  >
+								</div>
+							</div>
+							
+							<div class="row"> 
+								<div class="form-group col-md-6 col-lg-6 col-sm-12">
+									<label for="colorFind1">Status</label>
+									<select id="colorFind1" class="form-control" ng-options="status.name for status in dados.statuses" ng-model="purchase.status" >
+										<option value="">Select</option>
+									</select>
+								</div>
+							</div>
+							<div class="row" style="margin-top: 25px">
+								<div class="form-group col-12">
+									<button class="btn btn-primary" ng-click="findPurchaseByFind()"><i class="fa fa-check-circle"></i> Find Purchase</button>
+								</div>
+							</div>
+						</div>
+						<div class="col-6">
+							<img src="images/boticario.jpg" class="img-fluid" style="max-width:80%" alt="Logo">
+						</div>
+					</div>
+				
+				
+					<div ng-show="option == 4">
+						<table class="table table-hover" style="width: 88.7%">
+							<thead>
+								<tr>
+									<th>Code</th>
+									<th>CPF</th>
+									<th>Date</th>
+									<th>Value</th>
+									<th>Status</th>
+									<th>Acumulated Before</th>
+									<th>Percentage</th>
+									<th>Discount</th>
+									<th>Delete</th>
+									<th>Edit</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="purchase in listOfPurchase">
+									<td> {{purchase.code}} </td>
+									<td> {{purchase.cpf}} </td>
+									<td> {{purchase.date}} </td>
+									<td> {{purchase.valie}} </td>
+									<td> {{purchase.statusName}} </td>
+									<td> {{purchase.acumulated}} </td>
+									<td> {{purchase.percentAplied}} </td>
+									<td> {{purchase.dicountCashback}} </td>
+									<td ng-click="callEditDeletePurchases(2,purchase.id)"><i class="fa fa-trash"></i></td>
+									<td ng-click="callEditDeletePurchases(1,purchase.id)"><i class="fa fa-edit"></i></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</form>
+				<form name="formEditNotFound" ng-show="option == 5">
+					<div class="row">
+						<div class="col-6">
+							<div class="row">
+								System developed by Marcelo Boá da Rosa Contador</br>
+								marcelorosa1978@gmail.com</br>
+								(41) 99277-7674</br>
+								future collaborator of Boticário</br>
+							</div>
+						</div>
+						<div class="col-6">
+							<img src="images/boticario.jpg" class="img-fluid" style="max-width:80%" alt="Logo">
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<!-- Delete Confirmation Modal -->
+		<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="deleteModalLabel">Confirmation</h5>
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          <span aria-hidden="true">&times;</span>
+		        </button>
+		      </div>
+		      <div class="modal-body">
+		        Are you sure you want to delete this purchase?
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		        <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="deletePurchase();">Delete Purchase</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>		
+	</body>
+</html>
