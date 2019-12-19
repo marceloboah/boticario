@@ -69,7 +69,7 @@ Requisitos técnicos obrigatórios:
  
 Diferenciais (opcional): 
 • Testes unitários; NOK
-• Testes de integração; NOK
+• Testes de integração; OK
 • Autenticação JWT; OK=>JWT envio no login e captura na lista de Resellers.
 
 
